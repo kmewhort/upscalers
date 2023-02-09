@@ -1,0 +1,10 @@
+basicsr
+einops
+piexif
+ldm
+numpy
+Pillow
+Roboto
+safetensors
+timm==0.4.12
+torch
