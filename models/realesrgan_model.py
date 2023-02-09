@@ -10,11 +10,11 @@ from realesrgan import RealESRGANer
 from config import opts 
 from models.upscaler import Upscaler, UpscalerData
 
-
 class UpscalerRealESRGAN(Upscaler):
     def __init__(self, path):
         self.name = "RealESRGAN"
         self.user_path = path
+        self.outscale = None
         super().__init__()
         try:
             from basicsr.archs.rrdbnet_arch import RRDBNet
@@ -33,19 +33,27 @@ class UpscalerRealESRGAN(Upscaler):
         if not self.enable:
             return img
 
-        info = self.load_model(path)
-        if not os.path.exists(info.local_data_path):
-            print("Unable to load RealESRGAN model: %s" % info.name)
-            return img
+        if self.on_device_model_cache is not None:
+            upsampler = self.on_device_model_cache
+        else:
+            info = self.load_model(path)
+            # TODO: should this actually be the same scale used for model init and .enhance? it
+            # doesn't look like the actual scale is used
+            self.outscale = info.scale
+            if not os.path.exists(info.local_data_path):
+                print("Unable to load RealESRGAN model: %s" % info.name)
+                return img
 
-        upsampler = RealESRGANer(
-            scale=info.scale,
-            model_path=info.local_data_path,
-            model=info.model(),
-            half=not opts.no_half and not opts.upcast_sampling
-        )
+            upsampler = RealESRGANer(
+                scale=self.outscale,
+                model_path=info.local_data_path,
+                model=info.model(),
+                half=not opts.no_half and not opts.upcast_sampling
+            )
+            if opts.cache_models_on_device:
+                self.on_device_model_cache = upsampler
 
-        upsampled = upsampler.enhance(np.array(img), outscale=info.scale)[0]
+        upsampled = upsampler.enhance(np.array(img), outscale=self.outscale)[0]
 
         image = Image.fromarray(upsampled)
         return image

@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 
 from basicsr.utils.download_util import load_file_from_url
 
-import opts
+from config import opts
 
 def load_models(model_path: str, model_url: str = None, command_path: str = None, ext_filter=None, download_name=None, ext_blacklist=None) -> list:
     """
@@ -72,6 +72,7 @@ def friendly_name(file: str):
     return model_name
 
 def load_upscalers():
+    from models.upscaler import Upscaler
     # We can only do this 'magic' method to dynamically load upscalers if they are referenced,
     # so we'll try to import any _model.py files before looking in __subclasses__
     for file in os.listdir(opts.upscalers_path):
@@ -86,6 +87,7 @@ def load_upscalers():
     datas = []
     for cls in Upscaler.__subclasses__():
         name = cls.__name__
-        scaler = cls()
+        cmd_name = f"{name.lower().replace('upscaler', '')}_models_path"
+        scaler = cls(cmd_name)
         datas += scaler.scalers
-    datas
+    return datas

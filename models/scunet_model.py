@@ -7,12 +7,11 @@ import numpy as np
 import torch
 from basicsr.utils.download_util import load_file_from_url
 
-import models.upscaler
+from models.upscaler import Upscaler, UpscalerData
 from config import opts, modelloader
-from scunet_model_arch import SCUNet as net
+from models.scunet_model_arch import SCUNet as net
 
-
-class UpscalerScuNET(modules.upscaler.Upscaler):
+class UpscalerScuNET(Upscaler):
     def __init__(self, dirname):
         self.name = "ScuNET"
         self.model_name = "ScuNET GAN"
@@ -32,22 +31,25 @@ class UpscalerScuNET(modules.upscaler.Upscaler):
             if name == self.model_name2 or file == self.model_url2:
                 add_model2 = False
             try:
-                scaler_data = modules.upscaler.UpscalerData(name, file, self, 4)
+                scaler_data = UpscalerData(name, file, self, 4)
                 scalers.append(scaler_data)
             except Exception:
                 print(f"Error loading ScuNET model: {file}", file=sys.stderr)
                 print(traceback.format_exc(), file=sys.stderr)
         if add_model2:
-            scaler_data2 = modules.upscaler.UpscalerData(self.model_name2, self.model_url2, self)
+            scaler_data2 = UpscalerData(self.model_name2, self.model_url2, self)
             scalers.append(scaler_data2)
         self.scalers = scalers
 
     def do_upscale(self, img: PIL.Image, selected_file):
-        torch.cuda.empty_cache()
-
-        model = self.load_model(selected_file)
-        if model is None:
-            return img
+        if self.on_device_model_cache is not None:
+            model = self.on_device_model_cache
+        else:
+            model = self.load_model(selected_file)
+            if model is None:
+                return img
+            if opts.cache_models_on_device:
+                self.on_device_model_cache = model 
 
         device = opts.device
         img = np.array(img)
@@ -62,7 +64,8 @@ class UpscalerScuNET(modules.upscaler.Upscaler):
         output = 255. * np.moveaxis(output, 0, 2)
         output = output.astype(np.uint8)
         output = output[:, :, ::-1]
-        torch.cuda.empty_cache()
+        if not opts.cache_models_on_device:
+            torch.cuda.empty_cache()
         return PIL.Image.fromarray(output, 'RGB')
 
     def load_model(self, path: str):

@@ -4,6 +4,7 @@ piexif
 ldm
 numpy
 Pillow
+realesrgan
 Roboto
 safetensors
 timm==0.4.12

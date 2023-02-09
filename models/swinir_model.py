@@ -8,10 +8,9 @@ from basicsr.utils.download_util import load_file_from_url
 from tqdm import tqdm
 
 from config import modelloader, opts  
-from swinir_model_arch import SwinIR as net
-from swinir_model_arch_v2 import Swin2SR as net2
-from modules.upscaler import Upscaler, UpscalerData
-
+from models.swinir_model_arch import SwinIR as net
+from models.swinir_model_arch_v2 import Swin2SR as net2
+from models.upscaler import Upscaler, UpscalerData
 
 class UpscalerSwinIR(Upscaler):
     def __init__(self, dirname):
@@ -34,15 +33,22 @@ class UpscalerSwinIR(Upscaler):
         self.scalers = scalers
 
     def do_upscale(self, img, model_file):
-        model = self.load_model(model_file)
-        if model is None:
-            return img
-        model = model.to(opts.device, dtype=opts.dtype)
+        if self.on_device_model_cache is not None:
+            model = self.on_device_model_cache
+        else:
+            model = self.load_model(model_file)
+            if model is None:
+                return img
+            model = model.to(opts.device, dtype=opts.dtype)
+            if opts.cache_models_on_device:
+                self.on_device_model_cache = model 
+
         img = upscale(img, model)
-        try:
-            torch.cuda.empty_cache()
-        except:
-            pass
+        if not opts.cache_models_on_device:
+            try:
+                torch.cuda.empty_cache()
+            except:
+                pass
         return img
 
     def load_model(self, path, scale=4):
@@ -107,7 +113,7 @@ def upscale(
     img = np.moveaxis(img, 2, 0) / 255
     img = torch.from_numpy(img).float()
     img = img.unsqueeze(0).to(opts.device, dtype=opts.dtype)
-    with torch.no_grad(), torch.autocast():
+    with torch.no_grad(), torch.autocast(opts.device):
         _, _, h_old, w_old = img.size()
         h_pad = (h_old // window_size + 1) * window_size - h_old
         w_pad = (w_old // window_size + 1) * window_size - w_old
@@ -134,7 +140,7 @@ def inference(img, model, tile, tile_overlap, window_size, scale):
     stride = tile - tile_overlap
     h_idx_list = list(range(0, h - tile, stride)) + [h - tile]
     w_idx_list = list(range(0, w - tile, stride)) + [w - tile]
-    E = torch.zeros(b, c, h * sf, w * sf, dtype=config.dtype, evice=config.device).type_as(img)
+    E = torch.zeros(b, c, h * sf, w * sf, dtype=opts.dtype, device=opts.device).type_as(img)
     W = torch.zeros_like(E, dtype=opts.dtype, device=opts.device)
 
     with tqdm(total=len(h_idx_list) * len(w_idx_list), desc="SwinIR tiles") as pbar:

@@ -6,8 +6,8 @@ from PIL import Image
 from basicsr.utils.download_util import load_file_from_url
 
 import models.esrgan_model_arch as arch
-import modelloader
 from models.upscaler import Upscaler, UpscalerData
+from config import opts, modelloader
 
 def mod2normal(state_dict):
     # this code is copied from https://github.com/victorca25/iNNfer
@@ -144,10 +144,16 @@ class UpscalerESRGAN(Upscaler):
             self.scalers.append(scaler_data)
 
     def do_upscale(self, img, selected_model):
-        model = self.load_model(selected_model)
-        if model is None:
-            return img
-        model.to(opts.device)
+        if self.on_device_model_cache is not None:
+            model = self.on_device_model_cache
+        else:
+            model = self.load_model(selected_model)
+            if model is None:
+                return img
+            model.to(opts.device)
+            if opts.cache_models_on_device:
+                self.on_device_model_cache = model
+
         img = esrgan_upscale(model, img)
         return img
 

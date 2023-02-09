@@ -24,13 +24,14 @@ class Upscaler:
 
     def __init__(self, create_dirs=False):
         self.mod_pad_h = None
-        self.device = modules.shared.device
+        self.device = opts.device
         self.img = None
         self.output = None
         self.scale = 1
         self.half = not opts.no_half
         self.pre_pad = 0
         self.mod_scale = None
+        self.on_device_model_cache = None
 
         if self.model_path is None and self.name:
             self.model_path = os.path.join(opts.models_path, self.name)
@@ -71,6 +72,9 @@ class Upscaler:
 
     def update_status(self, prompt):
         print(f"\nextras: {prompt}", file=opts.progress_print_out)
+
+    def clear_on_device_cache(self):
+        self.on_device_model_cache = None
 
 
 class UpscalerData:
