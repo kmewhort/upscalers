@@ -6,6 +6,8 @@ import torch
 
 # Paths
 models_path = "./.model_cache"
+config_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__))
+upscalers_path = config_path.join("../models")
 
 # Progess output
 progress_print_out = sys.stdout
