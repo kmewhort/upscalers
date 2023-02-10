@@ -7,9 +7,9 @@ import numpy as np
 import torch
 from basicsr.utils.download_util import load_file_from_url
 
-from models.upscaler import Upscaler, UpscalerData
-from config import opts, modelloader
-from models.scunet_model_arch import SCUNet as net
+from .upscaler import Upscaler, UpscalerData
+from ..config import opts, modelloader
+from .scunet_model_arch import SCUNet as net
 
 class UpscalerScuNET(Upscaler):
     def __init__(self, dirname):

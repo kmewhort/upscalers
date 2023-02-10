@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from PIL import Image
 
-from config import opts, modelloader 
+from ..config import opts, modelloader 
 
 LANCZOS = (Image.Resampling.LANCZOS if hasattr(Image, 'Resampling') else Image.LANCZOS)
 NEAREST = (Image.Resampling.NEAREST if hasattr(Image, 'Resampling') else Image.NEAREST)

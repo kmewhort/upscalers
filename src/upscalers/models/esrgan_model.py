@@ -5,9 +5,9 @@ import torch
 from PIL import Image
 from basicsr.utils.download_util import load_file_from_url
 
-import models.esrgan_model_arch as arch
-from models.upscaler import Upscaler, UpscalerData
-from config import opts, modelloader
+from . import esrgan_model_arch as arch
+from .upscaler import Upscaler, UpscalerData
+from ..config import opts, modelloader
 
 def mod2normal(state_dict):
     # this code is copied from https://github.com/victorca25/iNNfer

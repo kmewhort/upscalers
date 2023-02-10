@@ -7,8 +7,8 @@ from PIL import Image
 from basicsr.utils.download_util import load_file_from_url
 from realesrgan import RealESRGANer
 
-from config import opts 
-from models.upscaler import Upscaler, UpscalerData
+from ..config import opts 
+from .upscaler import Upscaler, UpscalerData
 
 class UpscalerRealESRGAN(Upscaler):
     def __init__(self, path):

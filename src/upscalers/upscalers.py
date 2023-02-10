@@ -1,5 +1,5 @@
 import torch
-from config.modelloader import load_upscalers
+from .config.modelloader import load_upscalers
 
 UPSCALERS = load_upscalers()
 AVAILABLE_MODELS = [scaler.name for scaler in UPSCALERS]

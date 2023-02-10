@@ -7,10 +7,10 @@ from PIL import Image
 from basicsr.utils.download_util import load_file_from_url
 from tqdm import tqdm
 
-from config import modelloader, opts  
-from models.swinir_model_arch import SwinIR as net
-from models.swinir_model_arch_v2 import Swin2SR as net2
-from models.upscaler import Upscaler, UpscalerData
+from ..config import modelloader, opts  
+from .swinir_model_arch import SwinIR as net
+from .swinir_model_arch_v2 import Swin2SR as net2
+from .upscaler import Upscaler, UpscalerData
 
 class UpscalerSwinIR(Upscaler):
     def __init__(self, dirname):
