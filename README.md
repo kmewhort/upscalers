@@ -4,13 +4,35 @@
 
 This library wraps implementations of several popular image and video upscalers, aiming to make upscaling via any of these methods possible with a line of code.
 
+
+## Dependencies
+
+```
+basicsr
+einops
+piexif
+ldm
+numpy
+Pillow
+realesrgan
+Roboto
+safetensors
+timm==0.4.12
+torch
+```
+
+
 ## Installation
 
-`pip install upscalers`
+
+```bash
+pip install upscalers
+```
 
 ## Usage
 
-```
+
+```python
 from upscalers import upscale
 
 # upscale PIL image
@@ -18,11 +40,20 @@ scale_factor = 4.0
 result = upscale('R-ESRGAN General 4xV3', image, scale_factor)
 ```
 
-```
-# list available upscalers
+### Listing Available Upscalers
+
+```python
+# Enter in Python Interactive or run from a .py file
+
 from upscalers import available_models
 
 available_models()
+```
+
+
+```bash
+# Shell Output
+
 > [
  'Lanczos',
  'Nearest',
